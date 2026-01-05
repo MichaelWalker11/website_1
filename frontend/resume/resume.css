@@ -1,0 +1,27 @@
+h1{
+  text-align:center;
+  margin: 16px 0;
+}
+.topnav {
+	background-color:blue;
+	overflow:hidden;
+}
+.topnav a {
+	float:left;
+	color:white;
+	text-align:center;
+	padding:14px 16px;
+	text-decoration:none;
+	font-size:17px;
+}
+.topnav a:hover {
+	background-color: #ddd;
+	color: orange;
+}
+.resume-frame{
+  display:block;
+  width: min(900px, 100%); 
+  height: 100vh;
+  border: 0;
+  margin: 0 auto;       
+}
