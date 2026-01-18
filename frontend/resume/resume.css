@@ -18,8 +18,39 @@ h1{
 	background-color: #ddd;
 	color: orange;
 }
+#resume,
+#transcript{
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+/* apply sizing to the iframe directly (bulletproof) */
+#resume iframe,
+#transcript iframe{
+  display: block;
+  width: min(900px, 100%);
+  height: 100vh;
+  border: 0;
+}
+
+#transcript {
+  display: block;
+  width: min(900px, 100%); 
+  height: 100vh;
+  border: 0;
+  margin: 0 auto;
+}
+.transcript-frame{
+	display:block;
+	width: min(900px, 100%);
+	height: 100vh;
+	border: 0;
+	margin: 0 auto;
+}
 .resume-frame{
-  display:block;
+  display: block;
   width: min(900px, 100%); 
   height: 100vh;
   border: 0;

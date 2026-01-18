@@ -1,0 +1,12 @@
+<div class="camera-frame">
+<input type ="file" capture="camera" accept="image/*" id="cameraInput" name="cameraInput">
+</div>
+<div class="camera">
+    <button id="start-button">Capture photo</button>
+  <canvas id="canvas"></canvas>
+</div>
+
+<div class="output">
+    <video id="video">Video stream not available.</video>
+  <img id="photo" src="" alt="The screen capture will appear in this box." />
+</div>

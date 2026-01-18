@@ -1,7 +1,8 @@
 h1 {
 	color: red;
 	text-align: center;
-	font-family: Helvetica;
+	font-family: Helvetica-Neue;
+	font-size: 40px;
 }
 .topnav {
 	background-color:blue;

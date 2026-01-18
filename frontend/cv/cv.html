@@ -1,13 +1,31 @@
 <!DOCTYPE html>
-<head>
-<title>Computer Vision</title>
-<link rel="stylesheet" href=cv.css>
-</head>
-
-
-<body>
-<h1>Computer Vision </h1>
-<div class="camera-frame">
-<input type ="file" capture="camera" accept="image/*" id="cameraInput" name="cameraInput">
-</div>
-</body>
+<html>
+    <meta charset=utf-8></html>
+    <meta lang="en"></meta>
+    <head>
+        <title>Computer Vision</title>
+        <link rel="stylesheet" href=cv.css>
+    </head>
+    <div class="topnav">
+        <a class="active" href="../home/home.html">Home</a>
+        <a class="active" href="../resume/resume.html">Resume</a>
+        <a href="../cv/cv.html">Computer Vision</a>
+    </div>
+    
+    <body>
+        <h1>Computer Vision </h1>
+        <div class="camera">
+            <video id="video">Video stream not available.</video>
+            <button id="permissions-button">Allow Camera</button>
+            <button id="stop-button">Stop Camera</button>
+            <button id="start-button">Capture photo</button>
+        </div>
+        
+        <div class="output">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <script src="cv.js"></script>
+    </body>
+    
+</html>
