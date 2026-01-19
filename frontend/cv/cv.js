@@ -11,6 +11,9 @@ const startButton = document.getElementById("start-button");
 const allowButton = document.getElementById("permissions-button");
 const stopButton = document.getElementById("stop-button");
 
+let minAgeSeen = Infinity
+let maxAgeSeen = 0
+
 stopButton.addEventListener("click", () => {
     const stream = video.srcObject; 
   if (stream) {
@@ -87,22 +90,42 @@ async function takePicture() {
     context.drawImage(video, 0, 0, width, height);
 
     const data = canvas.toDataURL("image/png");
-    photo.setAttribute("src", data);
+    if (photo) photo.setAttribute("src", data);
 
     try {
-      console.log('Sending to API...')
+      console.log("Sending to API...");
       const result = await sendToApi(data);
       console.log("API result:", result);
 
-      // If you have <div id="age-output"></div> on the page:
       const out = document.getElementById("age-output");
+
+      // prefer integer predicted_age; fallback to rounded expected_age; fallback to null
+      const predictedAge =
+        (result.predicted_age !== undefined) ? result.predicted_age
+        : (result.expected_age !== undefined) ? Math.round(result.expected_age)
+        : null;
+
+      if (predictedAge !== null) {
+        minAgeSeen = Math.min(minAgeSeen, predictedAge);
+        maxAgeSeen= Math.max(maxAgeSeen, predictedAge)
+      }
+
       if (out) {
-        if (result.predicted_age !== undefined) {
-          out.textContent = `Predicted age: ${result.predicted_age} (expected: ${result.expected_age.toFixed(1)})`;
+        const minText = (minAgeSeen === Infinity) ? "—" : String(minAgeSeen);
+        const maxText = (maxAgeSeen === 0) ? "-" : String(maxAgeSeen);
+        if (predictedAge !== null) {
+          // show min first, then predicted + expected
+          if (result.expected_age !== undefined) {
+            out.textContent = `Min Age: ${minText} | Max Age: ${maxText} | Current Prediction: ${predictedAge} | Expected: ${result.expected_age.toFixed(1)}`;
+          } else {
+            out.textContent = `Min Age: ${minText} | Max Age: ${maxText} | Current Prediction: ${predictedAge}`;
+          }
         } else {
-          out.textContent = `Predicted: ${result.predicted_class}`;
+          // if API doesn't return numeric ages
+          out.textContent = `Min Age: ${minText} | Predicted: ${result.predicted_class}`;
         }
       }
+
     } catch (err) {
       console.error("Prediction failed:", err);
     }
@@ -111,6 +134,7 @@ async function takePicture() {
     clearPhoto();
   }
 }
+
 
 
 
