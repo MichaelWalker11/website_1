@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html>
-    <meta charset=utf-8></html>
-    <meta lang="en"></meta>
+    <meta charset=utf-8/>
     <head>
         <title>Computer Vision</title>
         <link rel="stylesheet" href=cv.css>
     </head>
-    <div class="topnav">
-        <a class="active" href="../home/home.html">Home</a>
-        <a class="active" href="../resume/resume.html">Resume</a>
-        <a href="../cv/cv.html">Computer Vision</a>
-    </div>
+    
     
     <body>
+        <div class="topnav">
+            <a class="active" href="../home/home.html">Home</a>
+            <a class="active" href="../resume/resume.html">Resume</a>
+            <a href="../cv/cv.html">Computer Vision</a>
+        </div>
+
         <h1>Computer Vision </h1>
         <div class="camera">
             <video id="video">Video stream not available.</video>
@@ -23,8 +24,16 @@
         
         <div class="output">
             <canvas id="canvas"></canvas>
+            <img id="photo" alt="Captured photo" />
+
         </div>
-        
+        <div id="age-output"></div>
+
+
+        <h2 style="text-align:center;">Draw Box</h2>
+        <canvas id="draw">
+        Canvas not supported
+        </canvas>
         <script src="cv.js"></script>
     </body>
     

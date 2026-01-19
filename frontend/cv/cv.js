@@ -59,8 +59,27 @@ function clearPhoto() {
 }
 
 clearPhoto();
+async function sendToApi(dataUrl) {
+  // Convert the dataURL to a Blob
+  const blob = await (await fetch(dataUrl)).blob();
 
-function takePicture() {
+  const formData = new FormData();
+  formData.append("file", blob, "capture.png"); // key must be "file" to match FastAPI
+
+  const res = await fetch("http://localhost:8000/predict/age", {
+    method: "POST",
+    body: formData
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
+}
+
+async function takePicture() {
   const context = canvas.getContext("2d");
   if (width && height) {
     canvas.width = width;
@@ -69,7 +88,29 @@ function takePicture() {
 
     const data = canvas.toDataURL("image/png");
     photo.setAttribute("src", data);
+
+    try {
+      console.log('Sending to API...')
+      const result = await sendToApi(data);
+      console.log("API result:", result);
+
+      // If you have <div id="age-output"></div> on the page:
+      const out = document.getElementById("age-output");
+      if (out) {
+        if (result.predicted_age !== undefined) {
+          out.textContent = `Predicted age: ${result.predicted_age} (expected: ${result.expected_age.toFixed(1)})`;
+        } else {
+          out.textContent = `Predicted: ${result.predicted_class}`;
+        }
+      }
+    } catch (err) {
+      console.error("Prediction failed:", err);
+    }
+
   } else {
     clearPhoto();
   }
 }
+
+
+

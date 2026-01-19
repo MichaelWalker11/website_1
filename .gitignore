@@ -1,2 +1,36 @@
-/Users/michaelwalker/Documents/website_1/data
+/data
 *.jpg
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# env
+.env
+.venv/
+venv/
+env/
+*.log
+
+# jupyter
+.ipynb_checkpoints/
+
+# data / models (big)
+*.tar
+*.tar.gz
+*.zip
+*.7z
+*.parquet
+*.h5
+*.keras
+*.ckpt
+*.onnx
+
+# local datasets / outputs
+data/
+data_clean/
+imdb_crop/
+age_dir/
+notebooks/data.csv
+
