@@ -5,13 +5,16 @@ import tensorflow as tf
 import numpy as np
 import json
 import io
-
+import matplotlib.pyplot as plt
 IMG_HEIGHT = 180
 IMG_WIDTH = 180
 
 app = FastAPI()
 
 
+
+if __name__ == "__main__":
+    uvicorn.run(app, reload=True, host='0.0.0.0', port=8000)
 
 
 app.add_middleware(
@@ -42,9 +45,11 @@ def build_model(num_classes: int):
         layers.Dense(num_classes),
     ])
 
-model = build_model(len(CLASS_NAMES))
-model.load_weights(r"models\age_model_weights.weights.h5")
 
+model_age = build_model(len(CLASS_NAMES))
+model_age.load_weights(r"models\age_model_weights.weights.h5")
+model_gender = build_model(2)
+model_gender.load_weights('models/gender_model.h5')
 
 def _try_parse_ages(class_names):
     try:
@@ -85,7 +90,7 @@ async def preidct_age(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-    logits = model.predict(x, verbose=0)
+    logits = model_age.predict(x, verbose=0)
     probs = tf.nn.softmax(logits[0]).numpy()
 
     pred_idx = int(np.argmax(probs))
@@ -104,7 +109,57 @@ async def preidct_age(file: UploadFile = File(...)):
             "predicted_age": predicted_age,
             "expected_age": expected_age,
         })
+    predicted_ages[pred_class] += 1
+    fig = plt.figure()
+    labels = list(predicted_ages.keys())
+    values = [predicted_ages[k] for k in labels]
+    plt.bar(labels, values)
+    plt.xticks(rotation=60, ha="right")
+    plt.title("Age Class Counts")
+      
+    fig.savefig('frontend/cv/plots/plot_age.png', format='png')
+    plt.close(fig)
+    return response
+
+@app.post('/predict/gender')
+async def predict_gender(file: UploadFile = File(...)):
+    if file.content_type not in ('image/jpeg', 'image/png', 'image/webp'):
+        raise HTTPException(status_code=415, detail=f'Unsupported file type: {file.content_type}')
+    
+    image_bytes = await file.read()
+
+    try:
+        x=preprocess_image_bytes(image_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    logits = model_gender.predict(x, verbose=0)
+    probs = tf.nn.softmax(logits[0]).numpy()
+
+    pred_idx = int(np.argmax(probs))
+    pred_class = 'female' if pred_idx == 0 else 'male'
+    conf=float(probs[pred_idx])
+
+    response = {
+        'predicted_gender': pred_class,
+        'confidence': conf
+    }
+    predicted_gender[pred_class] += 1
+    fig = plt.figure()
+    labels = ["female", "male"]
+    values = [predicted_gender["female"], predicted_gender["male"]]
+    plt.bar(labels, values, width=100)
+    plt.title("Gender Counts")
+    fig.savefig('frontend/cv/plots/plot_gender.png', format='png')
+    plt.close(fig)
 
     return response
 
 
+predicted_ages = {str(c): 0 for c in CLASS_NAMES}
+predicted_gender = {'female': 0, 'male': 0}
+
+
+    
+
+    
