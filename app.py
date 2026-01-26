@@ -1,11 +1,13 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
 import tensorflow as tf
 import numpy as np
 import json
 import io
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 IMG_HEIGHT = 180
 IMG_WIDTH = 180
 
@@ -69,10 +71,8 @@ def preprocess_image_bytes(image_bytes: bytes) -> tf.Tensor:
     img = tf.expand_dims(img, axis=0)
     return img
 
-
-
-
-
+predicted_ages = {str(c): 0 for c in CLASS_NAMES}
+predicted_gender = {'female': 0, 'male': 0}
 
 @app.get('/')
 async def root():
@@ -110,15 +110,7 @@ async def preidct_age(file: UploadFile = File(...)):
             "expected_age": expected_age,
         })
     predicted_ages[pred_class] += 1
-    fig = plt.figure()
-    labels = list(predicted_ages.keys())
-    values = [predicted_ages[k] for k in labels]
-    plt.bar(labels, values)
-    plt.xticks(rotation=60, ha="right")
-    plt.title("Age Class Counts")
-      
-    fig.savefig('frontend/cv/plots/plot_age.png', format='png')
-    plt.close(fig)
+   
     return response
 
 @app.post('/predict/gender')
@@ -145,19 +137,44 @@ async def predict_gender(file: UploadFile = File(...)):
         'confidence': conf
     }
     predicted_gender[pred_class] += 1
-    fig = plt.figure()
-    labels = ["female", "male"]
-    values = [predicted_gender["female"], predicted_gender["male"]]
-    plt.bar(labels, values, width=100)
-    plt.title("Gender Counts")
-    fig.savefig('frontend/cv/plots/plot_gender.png', format='png')
-    plt.close(fig)
+
+    
 
     return response
 
+@app.get('/plotly/age')
+async def plot_age():
+    x=list(predicted_ages.keys())
+    y=list(predicted_ages.values())
 
-predicted_ages = {str(c): 0 for c in CLASS_NAMES}
-predicted_gender = {'female': 0, 'male': 0}
+    fig = go.Figure(
+        data=[go.Bar(x=x, y=y)],
+        layout=go.Layout(
+            title="Age",
+            xaxis_title="Predicted Age",
+            yaxis_title ="Count",
+            margin=dict(l=40, r=20, t=50, b=40)
+        ),
+    )
+
+    return JSONResponse(content=fig.to_dict())
+
+@app.get('/plotly/gender')
+async def plot_gender():
+    x=list(predicted_gender.keys())
+    y=list(predicted_gender.values())
+
+    fig = go.Figure(
+        data=[go.Bar(x=x, y=y)],
+        layout=go.Layout(
+            title="Age",
+            xaxis_title="Predicted Gender",
+            yaxis_title ="Count",
+            margin=dict(l=40, r=20, t=50, b=40)
+        ),
+    )
+
+    return JSONResponse(content=fig.to_dict())
 
 
     

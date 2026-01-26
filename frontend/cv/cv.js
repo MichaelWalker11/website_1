@@ -1,5 +1,6 @@
 const width = 320; // We will scale the photo width to this
 let height = 0; // This will be computed based on the input stream
+console.log("cv.js loaded");
 
 let streaming = false;
 
@@ -21,6 +22,39 @@ let lastPostAt = 0;
 let intervalMs = 500;
 let inFlight = false; // prevents piling up requests
 
+let lastChartAt = 0;
+const chartIntervalMs = 1500;
+
+async function renderAgeChart() {
+  const el = document.getElementById("age-chart");
+  if (!el || typeof Plotly === "undefined") return;
+
+  const res = await fetch("http://127.0.0.1:8000/plotly/age");
+  if (!res.ok) {
+    console.error("Failed to load plot:", await res.text());
+    return;
+  }
+
+  const fig = await res.json();
+  Plotly.react("age-chart", fig.data, fig.layout, { responsive: true });
+}
+
+async function renderGenderChart() {
+  const el = document.getElementById("gender-chart")
+  if (!el || typeof Plotly === "undefined") return;
+
+  const res = await fetch("http://127.0.0.1:8000/plotly/gender");
+  if (!res.ok) {
+    console.error("Failed to load plot:", await res.text());
+    return;
+  }
+
+  const fig = await res.json();
+  Plotly.react("gender-chart", fig.data, fig.layout, {responsive: true})
+}
+
+  document.addEventListener("DOMContentLoaded", renderAgeChart);
+  document.addEventListener("DOMContentLoaded", renderGenderChart)
 function startPredictLoop() {
   if (predictLoopOn) return;
   predictLoopOn = true;
@@ -52,6 +86,9 @@ function canvasToBlob(mime = "image/jpeg", quality = 0.9) {
   });
 }
 
+
+
+
 async function postCurrentFrame() {
   inFlight = true;
 
@@ -76,9 +113,14 @@ async function postCurrentFrame() {
 
     // update text (reuse your formatting)
     renderOutputs(ageResult, genderResult);
+    const now = Date.now();
+    if (now - lastChartAt >= chartIntervalMs) {
+         lastChartAt = now;
+        renderAgeChart();
+        renderGenderChart();
+    }
 
-    // OPTIONAL: refresh plots if you still want those PNGs
-    refreshPlots();
+   
   } catch (err) {
     console.error("Prediction failed:", err);
   } finally {
@@ -157,21 +199,6 @@ video.addEventListener("canplay", (ev) => {
   }
 });
 
-startButton.addEventListener("click", (ev) => {
-  takePicture();
-  ev.preventDefault();
-});
-
-function clearPhoto() {
-  const context = canvas.getContext("2d");
-  context.fillStyle = "#aaaaaa";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
-  const data = canvas.toDataURL("image/png");
-  photo.setAttribute("src", data);
-}
-
-clearPhoto();
 
 function dataUrlToBlob(dataUrl) {
   const [meta, base64] = dataUrl.split(",");
@@ -201,10 +228,6 @@ async function postImageToEndpoint(blob, endpointPath) {
     throw new Error(text);
   }
   return await res.json();
-}
-function refreshPlots() {
-  document.getElementById("genderPlot").src = "plots/plot_gender.png?t=" + Date.now();
-  document.getElementById("agePlot").src = "plots/plot_age.png?t=" + Date.now();
 }
 
 
